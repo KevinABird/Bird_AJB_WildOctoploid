@@ -1,0 +1,54 @@
+---
+title: "Treemix"
+author: "Kevin Bird"
+date: "1/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r load}
+library(RColorBrewer)
+library(R.utils)
+library(here)
+library(OptM)
+source("treemix-1.13/src/plotting_funcs.R")
+
+```
+
+```{r plot all}
+FirstRun_prefix<-"Treemix/SNP_Array/genotypes.50k_850k.wild.NoHybrids.treemix"
+SecondRun_prefix="TreemixSecondRun/genotypes.50k_850k.wild.NoHybrids.treemix"
+
+
+par(mfrow=c(2,3))
+for(edge in 0:5){
+  plot_tree(cex=0.8,paste0(FirstRun_prefix,".",edge))
+  title(paste("First Run",edge,"edges"))
+}
+
+par(mfrow=c(2,3))
+for(edge in 0:5){
+  plot_tree(cex=0.8,paste0(SecondRun_prefix,".",edge))
+  title(paste("Second Run",edge,"edges"))
+}
+
+for(edge in 0:5){
+ plot_resid(stem=paste0(FirstRun_prefix,".",edge),pop_order=pops)
+}
+
+
+
+```
+```{r OptM}
+FirstRunFolder<-"/home/bird/Documents/Chilo-OriginsProj/Treemix/OptM"
+SecondRunFolder<-"/home/bird/Documents/Chilo-OriginsProj/TreemixSecondRun/OptM"
+
+test1.optM = optM(FirstRunFolder)
+test2.optM = optM(SecondRunFolder)
+
+plot_optM(test1.optM, method = "Evanno")
+plot_optM(test2.optM, method = "Evanno")
+```
+

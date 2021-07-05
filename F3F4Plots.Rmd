@@ -1,0 +1,123 @@
+---
+title: "F3_F4_Plots"
+author: "Kevin Bird"
+date: "11/29/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("devtools") # if "devtools" is not installed already
+#devtools::install_github("uqrmaie1/admixtools", dependencies = TRUE)
+library(dplyr)
+library(cowplot)
+library(admixr)
+library(tidyverse)
+library(here)
+library(stargazer)
+#Sys.setenv(PATH="/home/bird/.local/bin:/home/bird/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/bird/Documents/Chilo-OriginsProj/AdmixTools/bin/")
+```
+
+```{r,map plot}
+LatLong<-read.csv("LatLongwID.csv")
+colorBlindBlack8  <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
+                       "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+world<-map_data('world',xlim=c(min(LatLong$Long),max(LatLong$Long)),ylim=c(min(LatLong$Lat),max(LatLong$Lat)))
+ggplot() + geom_polygon(world, mapping=aes(x=long, y = lat, group = group), fill = NA, color = "black") + geom_point(data=LatLong, mapping=aes(x=Long,y=Lat,colour=Subspecies),size=3)+scale_color_manual(values=colorBlindBlack8)+theme_cowplot(12,font_size = 20)
+```
+
+
+
+```{r read files}
+prefix<-"genotypes.50k.850k.wild.NoHybrids.NoK4"
+snps<-eigenstrat(prefix)
+pops<-c("FCC","FCP","FCL","FVV","FVP","FVG","FVY")
+
+```
+
+```{r F3 outgroup}
+result <- f3(A = pops, B = pops, C = "Fvir_gry", data = snps)
+ordered <- filter(result, A == "Fchi_patg", B != "Fchi_patg") %>% arrange(f3) %>% .[["B"]] %>% c("Fchi_patg")
+result %>%
+    filter(A != B) %>%
+    mutate(A = factor(A, levels = rev(ordered)),
+           B = factor(B, levels = rev(ordered))) %>%
+    ggplot(aes(A, B)) + geom_tile(aes(fill = f3))+theme_cowplot(12)
+```
+
+```{r ABBA-BABA test}
+
+
+ABBA_BABA_reciprocal_monophyly<-d(W = c("FCC","FCP"),X = c("FCC","FCL"),Y = c("FVG","FVV"),Z=c("FVP","FVY"),data=snps)
+ABBA_BABA_reciprocal_monophyly<-d(W = c("FCC","FCP","FCL"),X = c("FCP","FCC","FCL"),Y = c("FVP","FVY","FVV","FVG"),Z=c("FVP","FVY","FVG","FVV"),data=snps)
+
+ABBA_BABA_reciprocal_monophyly<-ABBA_BABA_reciprocal_monophyly[!duplicated(t(apply(ABBA_BABA_reciprocal_monophyly[c(1,2,3,4)], 1, sort))),]
+ABBA_BABA_reciprocal_monophyly<-ABBA_BABA_reciprocal_monophyly[order(abs(ABBA_BABA_reciprocal_monophyly$Zscore),decreasing = T),]
+stargazer(ABBA_BABA_reciprocal_monophyly,title = "D-statistic test for reciprocal monophyly",summary=F)
+
+Fchi_fourpop<-d(W = "FCP",X = "FCL",Y = c("FVV","FVP","FVG","FVY"),Z = c("FCC"),data=snps)
+stargazer(Fchi_fourpop,title = "test for ssp. pacifica and F. virginiana gene flow",summary=F)
+
+
+```
+
+```{r F3 admixture test}
+
+s<-f3(A=c("FCP","FCL","FCC"), B=c("FVV","FVG"), C=pops,data=snps)
+s<-s %>% filter(A !=B, A != C, B !=C) 
+p<-ggplot(s, aes(f3,fct_reorder(C, f3), color = Zscore < -3)) +
+  geom_point(size=4.5) +
+  geom_vline(xintercept = 0, linetype = 2) +
+  geom_linerange(aes(xmin = f3 - 2 * stderr, xmax = f3 + 2 * stderr),size=3)+
+  facet_wrap(~A*B,scales = "free")+ ylab("Pop C") + theme_cowplot(12)+theme(text = element_text(size=20),axis.text.y=element_text(size=20),strip.text.x = element_text(size = 25, face = "bold"))
+
+```
+
+
+```{r admixture graphs}
+library("admixtools")
+library(igraph)
+f2_blocks = f2_from_precomp(myf2dir)
+graph1 <- read.delim("~/Downloads/AdmixGraphsBaseGraph.tsv")
+graph2 <- read.delim("~/Downloads/AdmixGraph1.tsv")
+graph3 <- read.delim("~/Downloads/AdmixGraph2.tsv")
+graph4 <- read.delim("~/Downloads/AdmixGraph3BestFit.tsv")
+graph5 <- read.delim("~/Downloads/AdmixGraph3Competing.tsv")
+graph6 <- read.delim("~/Downloads/AdmixGraph4BestFit.tsv")
+
+
+graph_null<-graph_from_data_frame(graph1)
+graph_1admix<-graph_from_data_frame(graph2)
+graph_2admix<-graph_from_data_frame(graph3)
+graph_3admix_1<-graph_from_data_frame(graph4)
+graph_3admix_2<-graph_from_data_frame(graph5)
+graph_4admix_1<-graph_from_data_frame(graph6)
+
+
+qpgraph_resultsNoAdmix<-qpgraph(f2_blocks,graph_null,return_f4 = T)
+qpgraph_results_1admix<-qpgraph(f2_blocks,graph_1admix,return_f4 = T)
+qpgraph_results_2admix<-qpgraph(f2_blocks,graph_2admix,return_f4 = T)
+qpgraph_results_3admix_graph_1<-qpgraph(f2_blocks,graph_3admix_1,return_f4 = T)
+qpgraph_results_3admix_graph_2<-qpgraph(f2_blocks,graph_3admix_2,return_f4 = T)
+qpgraph_results_4admix_graph_1<-qpgraph(f2_blocks,graph_4admix_1,return_f4 = T)
+
+
+print(c(qpgraph_resultsNoAdmix$score,qpgraph_resultsNoAdmix$worst_residual))
+print(c(qpgraph_results_1admix$score,qpgraph_results_1admix$worst_residual))
+print(c(qpgraph_results_2admix$score,qpgraph_results_2admix$worst_residual))
+print(c(qpgraph_results_3admix_graph_1$score,qpgraph_results_3admix_graph_1$worst_residual))
+print(c(qpgraph_results_3admix_graph_2$score,qpgraph_results_3admix_graph_2$worst_residual))
+print(c(qpgraph_results_4admix_graph_1$score,qpgraph_results_4admix_graph_1$worst_residual))
+
+
+fits = qpgraph_resample_multi(f2_blocks, list(graph_3admix_1, graph_2admix), nboot = 100,seed=T)
+compare_fits(fits[[1]]$score_test, fits[[2]]$score_test)
+
+par(mfrow=c(2,2))
+plot_graph(qpgraph(f2_blocks,graph = graph_null)$edges,color = F)
+plot_graph(qpgraph(f2_blocks,graph = graph_3admix_1)$edges,color=F)
+plot_graph(qpgraph(f2_blocks,graph = graph_3admix_2)$edges,color=F,fix_down = T)
+plot_graph(qpgraph(f2_blocks,graph = graph_3)$edges,color=F)
+plot_graph(qpgraph(f2_blocks,graph = graph_4)$edges,color=F)
+
+```

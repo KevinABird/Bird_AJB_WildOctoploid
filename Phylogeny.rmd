@@ -1,0 +1,28 @@
+---
+title: "Phylogeny"
+author: "Kevin Bird"
+date: "2/8/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(here)
+library(tidyverse)
+library(ggtree)
+```
+
+```{r readSVDQuartets}
+SVDQuartets<-read.tree("../../PAUP/WildOctoNoHybridsFullTreeFinal.tre")
+#SVDQuartets<-read.tree("SVDQuartets.tre")
+SVDQuartetsFullRooted<-ape::root.phylo(SVDQuartets,"Rubus_out")
+sample_list <- read.delim("~/Documents/Chilo-OriginsProj/sample_list.csv", sep=",",stringsAsFactors=FALSE,)
+names(sample_list)<-c("sample","subspecies")
+```
+
+```{r Plot Tree}
+Tree1<-ggtree(SVDQuartetsFullRooted,branch.length = "none")%<+% sample_list  + geom_nodelab()+ geom_text(aes(label=subspecies), hjust=-0.2)+geom_cladelabel(node=66, "Fragaria chiloensis \n South American",offset = 2)+ geom_cladelabel(no=69,"Fragaria virginiana",offset=2)+theme(legend.position = "top") 
+
+rotate(Tree1,68)+geom_strip('PI551453','PI551729', "Fragaria chiloensis \n North American", offset=2,offset.text=0.25)
+
+```

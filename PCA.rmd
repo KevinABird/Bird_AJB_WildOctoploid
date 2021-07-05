@@ -1,0 +1,60 @@
+---
+title: "PCA"
+author: "Kevin Bird"
+date: "2/18/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+#knitr::opts_chunk$set(echo = TRUE)]
+#if (!requireNamespace("BiocManager", quietly=TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("gdsfmt")
+#BiocManager::install("SNPRelate")
+
+library(gdsfmt)
+library(SNPRelate)
+library(here)
+library(tidyverse)
+library(ggplot2)
+library(cowplot)
+
+```
+
+```{r load vcf}
+vcf.fn <- "genotypes.50k_850k.wild.vcf"
+snpgdsVCF2GDS(vcf.fn, "genotypes.50k_850k.wild.gds", method="biallelic.only")
+```
+
+```{r LD prune}
+set.seed(1000)
+genofile <- snpgdsOpen("genotypes.50k_850k.wild.gds")
+snpset <- snpgdsLDpruning(genofile, ld.threshold=0.2)
+```
+
+```{r PCA}
+snpset.id <- unlist(unname(snpset))
+pca <- snpgdsPCA(genofile, snp.id=snpset.id, num.thread=2)
+
+pc.percent <- pca$varprop*100
+head(round(pc.percent, 2))
+
+
+sample.id <- read.gdsn(index.gdsn(genofile, "sample.id"))
+pop_code <- read.delim("~/Documents/Chilo-OriginsProj/pop.txt", header=FALSE, stringsAsFactors=FALSE)
+names(pop_code)<-c("sample.id","family.id","pop_code")
+
+
+tab <- data.frame(sample.id = pca$sample.id,
+    pop = factor(pop_code$pop_code)[match(pca$sample.id, sample.id)],
+    EV1 = pca$eigenvect[,1],    # the first eigenvector
+    EV2 = pca$eigenvect[,2],    # the second eigenvector
+    stringsAsFactors = FALSE)
+head(tab)
+
+colorBlindBlack8  <- c("#000000", "#E69F00", "#56B4E9", "#009E73","#F0E442", "#0072B2", "#D55E00", "#CC79A7","#999933")
+ggplot(data=tab, aes(x=EV1,y=EV2,colour=pop))+geom_point(size=3)+scale_color_manual(values=colorBlindBlack8)+theme_cowplot(12,font_size = 20)+xlab("PC1")+ylab("PC2")
+
+
+```
+
