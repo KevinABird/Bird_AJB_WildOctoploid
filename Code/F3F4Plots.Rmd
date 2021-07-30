@@ -19,7 +19,7 @@ library(stargazer)
 ```
 
 ```{r,map plot}
-LatLong<-read.csv("LatLongwID.csv")
+LatLong<-read.csv("../Data/LatLongwID.csv")
 colorBlindBlack8  <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
                        "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 world<-map_data('world',xlim=c(min(LatLong$Long),max(LatLong$Long)),ylim=c(min(LatLong$Lat),max(LatLong$Lat)))
@@ -29,20 +29,10 @@ ggplot() + geom_polygon(world, mapping=aes(x=long, y = lat, group = group), fill
 
 
 ```{r read files}
-prefix<-"genotypes.50k.850k.wild.NoHybrids.NoK4"
+prefix<-"../Data/genotypes.50k.850k.wild.NoHybrids.NoK4"
 snps<-eigenstrat(prefix)
 pops<-c("FCC","FCP","FCL","FVV","FVP","FVG","FVY")
 
-```
-
-```{r F3 outgroup}
-result <- f3(A = pops, B = pops, C = "Fvir_gry", data = snps)
-ordered <- filter(result, A == "Fchi_patg", B != "Fchi_patg") %>% arrange(f3) %>% .[["B"]] %>% c("Fchi_patg")
-result %>%
-    filter(A != B) %>%
-    mutate(A = factor(A, levels = rev(ordered)),
-           B = factor(B, levels = rev(ordered))) %>%
-    ggplot(aes(A, B)) + geom_tile(aes(fill = f3))+theme_cowplot(12)
 ```
 
 ```{r ABBA-BABA test}
@@ -77,13 +67,14 @@ p<-ggplot(s, aes(f3,fct_reorder(C, f3), color = Zscore < -3)) +
 ```{r admixture graphs}
 library("admixtools")
 library(igraph)
+myf2dir <- "../Data/F2dir"
 f2_blocks = f2_from_precomp(myf2dir)
-graph1 <- read.delim("~/Downloads/AdmixGraphsBaseGraph.tsv")
-graph2 <- read.delim("~/Downloads/AdmixGraph1.tsv")
-graph3 <- read.delim("~/Downloads/AdmixGraph2.tsv")
-graph4 <- read.delim("~/Downloads/AdmixGraph3BestFit.tsv")
-graph5 <- read.delim("~/Downloads/AdmixGraph3Competing.tsv")
-graph6 <- read.delim("~/Downloads/AdmixGraph4BestFit.tsv")
+graph1 <- read.delim("../Data/AdmixtureGraphs/AdmixGraphsBaseGraph.tsv")
+graph2 <- read.delim("../Data/AdmixtureGraphs/AdmixGraph1.tsv")
+graph3 <- read.delim("../Data/AdmixtureGraphs/AdmixGraph2.tsv")
+graph4 <- read.delim("../Data/AdmixtureGraphs/AdmixGraph3BestFit.tsv")
+graph5 <- read.delim("../Data/AdmixtureGraphs/AdmixGraph3Competing.tsv")
+graph6 <- read.delim("../Data/AdmixtureGraphs/AdmixGraph4BestFit.tsv")
 
 
 graph_null<-graph_from_data_frame(graph1)
