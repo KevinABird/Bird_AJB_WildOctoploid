@@ -13,10 +13,10 @@ library(ggtree)
 ```
 
 ```{r readSVDQuartets}
-SVDQuartets<-read.tree("../../PAUP/WildOctoNoHybridsFullTreeFinal.tre")
+SVDQuartets<-read.tree("../Data/WildOctoNoHybridsFullTreeFinal.tre")
 #SVDQuartets<-read.tree("SVDQuartets.tre")
 SVDQuartetsFullRooted<-ape::root.phylo(SVDQuartets,"Rubus_out")
-sample_list <- read.delim("~/Documents/Chilo-OriginsProj/sample_list.csv", sep=",",stringsAsFactors=FALSE,)
+sample_list <- read.delim("../Data/sample_list.csv", sep=",",stringsAsFactors=FALSE,)
 names(sample_list)<-c("sample","subspecies")
 ```
 
