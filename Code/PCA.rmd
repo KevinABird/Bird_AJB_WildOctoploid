@@ -22,13 +22,13 @@ library(cowplot)
 ```
 
 ```{r load vcf}
-vcf.fn <- "genotypes.50k_850k.wild.vcf"
-snpgdsVCF2GDS(vcf.fn, "genotypes.50k_850k.wild.gds", method="biallelic.only")
+vcf.fn <- "../Data/genotypes.50k_850k.wild.vcf"
+snpgdsVCF2GDS(vcf.fn, "../Data/genotypes.50k_850k.wild.gds", method="biallelic.only")
 ```
 
 ```{r LD prune}
 set.seed(1000)
-genofile <- snpgdsOpen("genotypes.50k_850k.wild.gds")
+genofile <- snpgdsOpen("../Data/genotypes.50k_850k.wild.gds")
 snpset <- snpgdsLDpruning(genofile, ld.threshold=0.2)
 ```
 
@@ -40,8 +40,8 @@ pc.percent <- pca$varprop*100
 head(round(pc.percent, 2))
 
 
-sample.id <- read.gdsn(index.gdsn(genofile, "sample.id"))
-pop_code <- read.delim("~/Documents/Chilo-OriginsProj/pop.txt", header=FALSE, stringsAsFactors=FALSE)
+sample.id <- read.gdsn(index.gdsn(genofile, "../Data/sample.id"))
+pop_code <- read.delim("../Data/pop.txt", header=FALSE, stringsAsFactors=FALSE)
 names(pop_code)<-c("sample.id","family.id","pop_code")
 
 
