@@ -40,7 +40,7 @@ pc.percent <- pca$varprop*100
 head(round(pc.percent, 2))
 
 
-sample.id <- read.gdsn(index.gdsn(genofile, "../Data/sample.id"))
+sample.id <- read.gdsn(index.gdsn(genofile, "sample.id"))
 pop_code <- read.delim("../Data/pop.txt", header=FALSE, stringsAsFactors=FALSE)
 names(pop_code)<-c("sample.id","family.id","pop_code")
 
