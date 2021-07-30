@@ -18,8 +18,8 @@ source("treemix-1.13/src/plotting_funcs.R")
 ```
 
 ```{r plot all}
-FirstRun_prefix<-"Treemix/SNP_Array/genotypes.50k_850k.wild.NoHybrids.treemix"
-SecondRun_prefix="TreemixSecondRun/genotypes.50k_850k.wild.NoHybrids.treemix"
+FirstRun_prefix<-"../Data/Treemix/SNP_Array/genotypes.50k_850k.wild.NoHybrids.treemix"
+SecondRun_prefix="../Data/TreemixSecondRun/genotypes.50k_850k.wild.NoHybrids.treemix"
 
 
 par(mfrow=c(2,3))
@@ -42,8 +42,8 @@ for(edge in 0:5){
 
 ```
 ```{r OptM}
-FirstRunFolder<-"/home/bird/Documents/Chilo-OriginsProj/Treemix/OptM"
-SecondRunFolder<-"/home/bird/Documents/Chilo-OriginsProj/TreemixSecondRun/OptM"
+FirstRunFolder<-"../Data/Treemix/OptM"
+SecondRunFolder<-"../Data//TreemixSecondRun/OptM"
 
 test1.optM = optM(FirstRunFolder)
 test2.optM = optM(SecondRunFolder)
